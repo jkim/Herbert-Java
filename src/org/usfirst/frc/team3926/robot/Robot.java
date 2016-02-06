@@ -1,5 +1,10 @@
-
+/* Created Fri Feb 05 07:22:58 CST 2016 */
 package org.usfirst.frc.team3926.robot;
+
+import org.strongback.Strongback;
+import org.strongback.components.Motor;
+import org.strongback.components.PneumaticsModule;
+import org.strongback.hardware.Hardware;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -10,9 +15,9 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-	
-	
+
 public class Robot extends IterativeRobot {
+	Motor strongBackTalon_FL;
 	Talon talon_FL;
 	Talon talon_BL;
 	Talon talon_FR;
@@ -36,45 +41,61 @@ public class Robot extends IterativeRobot {
     DoubleSolenoid sideLiftR; //The right side cylinder
     DoubleSolenoid sideLiftL; //The left side cylinder 
     
-    final int ID = 1; //ID number of the PCM (pneumatics control module)
-    final int liftForward = 5; //These need to be the channel numbers on the PCM (only like this so we can write other code)
-    final int liftReverse = 2;
+    final int ID           = 1; //ID number of the PCM (pneumatics control module)
+    final int liftForward  = 5; //These need to be the channel numbers on the PCM (only like this so we can write other code)
+    final int liftReverse  = 2;
     final int rSideForward = 4;
     final int rSideReverse = 3;
     final int lSideForward = 6;
     final int lSideReverse = 1;
-	
+
+    final int TALON_FL_ID = 0;
+    final int TALON_BL_ID = 1;
+    final int TALON_FR_ID = 2;
+    final int TALON_BR_ID = 3;
+
+    @Override
     public void robotInit() {
-    	talon_FL = new Talon(0);
-    	talon_BL = new Talon(1);
-    	talon_FR = new Talon(2);
-    	talon_BR = new Talon(3);
-    	driveSystem = new RobotDrive(talon_FL, talon_BL, talon_FR, talon_BR);
-    	armWheels = new Talon(8);
-    	
-    	leftStick = new Joystick(0);
-    	rightStick = new Joystick(1);
-    	
-    	topLimit = new DigitalInput(9);
-    	botLimit = new DigitalInput(8);
-    	
-    	compressor = new Compressor(ID);
-    	compressor.setClosedLoopControl(true);
-    	mainLift = new DoubleSolenoid(ID, liftForward, liftReverse);
-    	sideLiftR = new DoubleSolenoid(ID, rSideForward, rSideReverse);
-    	sideLiftL = new DoubleSolenoid(ID, lSideForward, lSideReverse);
-    } 
-    ////End robotInit()////
+    		strongBackTalon_FL = Hardware.Motors.talon(TALON_FL_ID);
+	    	talon_FL = new Talon(TALON_FL_ID);
+	    	talon_BL = new Talon(TALON_BL_ID);
+	    	talon_FR = new Talon(TALON_FR_ID);
+	    	talon_BR = new Talon(TALON_BR_ID);
+	    	driveSystem = new RobotDrive(talon_FL, talon_BL, talon_FR, talon_BR);
+	    	armWheels = new Talon(8);
+	    	
+	    	leftStick = new Joystick(0);
+	    	rightStick = new Joystick(1);
+	    	
+	    	topLimit = new DigitalInput(9);
+	    	botLimit = new DigitalInput(8);
 
-    public void autonomousPeriodic() {
+//            PneumaticsModule compressor1 = Hardware.pneumaticsModule(1);
+//            DoubleSolenoid ds = Hardware.Solenoids.doubleSolenoid(ID, liftForward, liftReverse);
+//            ds.set();
 
-    } 
-    ////End autonomousPeriodic()////
+	    	compressor = new Compressor(ID);
+	    	compressor.setClosedLoopControl(true);
+	    	mainLift = new DoubleSolenoid(ID, liftForward, liftReverse);
+	    	sideLiftR = new DoubleSolenoid(ID, rSideForward, rSideReverse);
+	    	sideLiftL = new DoubleSolenoid(ID, lSideForward, lSideReverse);
+    }
 
+    @Override
+    public void teleopInit() {
+        // Start Strongback functions ...
+        Strongback.start();
+    }
+
+    @Override
     public void teleopPeriodic() {
         rightInput = rightStickReturn();
         leftInput = leftStickReturn();
-        
+
+        if (leftStick.getRawButton(1)) {
+            rightInput = leftInput;
+        }
+
         if (leftStick.getRawButton(1)) rightInput = leftInput;
         
         driveSystem.tankDrive(leftInput, rightInput);
@@ -104,8 +125,8 @@ public class Robot extends IterativeRobot {
         }
         
         SmartDashboard.putInt("Debounce", debounce);
-    }  
-    ////End teleopPeriodic()////
+    }
+
     /**
      * @param value: The value to set all solenoids to (forward, reverse, or off);
      */
@@ -114,36 +135,41 @@ public class Robot extends IterativeRobot {
     	sideLiftL.set(value);
     }
     ////End solenoidControl()////
-    
-    int debounceCounter = 0;
-    /**
-     * @param limitSwitch: The name of the limit switch which we are looking at
-     * @param joystick: The name of the joystick who's button we will check
-     * @param button: the button on the joystick which we will check
-     * @return If true, the limit switch is actually pressed and the joystick is actually pressed
-     */
-    public boolean debounceLimit(DigitalInput limitSwitch, Joystick joystick, int button) {
-    	boolean check = false;
-    	
-    	if (joystick.getRawButton(button)) {
-    		if (limitSwitch.get()) ++debounceCounter;
-    		else debounceCounter = 0;
-    		
-    		if (debounceCounter > 20) check = true;
-    		else check = false;
-    	}
-    	else {
-    		check = false;
-    		debounceCounter = 0;
-    	}
-    	
-    	return check;
+   
+   int debounceCounter = 0;
+   /**
+    * @param limitSwitch: The name of the limit switch which we are looking at
+    * @param joystick: The name of the joystick who's button we will check
+    * @param button: the button on the joystick which we will check
+    * @return If true, the limit switch is actually pressed and the joystick is actually pressed
+    */
+   public boolean debounceLimit(DigitalInput limitSwitch, Joystick joystick, int button) {
+   	boolean check = false;
+   	
+   	if (joystick.getRawButton(button)) {
+   		if (limitSwitch.get()) ++debounceCounter;
+   		else debounceCounter = 0;
+   		
+   		if (debounceCounter > 20) check = true;
+   		else check = false;
+   	}
+   	else {
+   		check = false;
+   		debounceCounter = 0;
+   	}
+   	
+   	return check;
+   }
+    @Override
+    public void disabledInit() {
+        // Tell Strongback that the robot is disabled so it can flush and kill commands.
+        Strongback.disable();
     }
+
     ////End debounceLimit()////
     public double leftStickReturn() {return leftStick.getY() * -1;}
     ////End leftStickReturn()////
     
     public double rightStickReturn() {return rightStick.getY() * -1;}
     ////End rightStickReturn()////
-} 
-////End Robot////
+}
