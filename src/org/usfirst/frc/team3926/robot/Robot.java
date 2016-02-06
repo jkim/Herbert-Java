@@ -94,9 +94,9 @@ public class Robot extends IterativeRobot {
         // Initialize Pneumatic Control System
         compressor = new Compressor(PCM_CAN_ID);
         compressor.setClosedLoopControl(true);
-        mainLift = new DoubleSolenoid(PCM_CAN_ID, PCM_LIFT_FORWARD_CHANNEL_ID, PCM_LIFT_REVERSE_CHANNEL_ID);
-        sideLiftR = new DoubleSolenoid(PCM_CAN_ID, PCM_RIGHT_SIDE_FORWARD_CHANNEL_ID, PCM_RIGHT_SIDE_REVERSE_CHANNEL_ID);
-        sideLiftL = new DoubleSolenoid(PCM_CAN_ID, PCM_LEFT_SIDE_FORWARD_CHANNEL_ID, PCM_LEFT_SIDE_REVERSE_CHANNEL_ID);
+        mainLift   = new DoubleSolenoid(PCM_CAN_ID, PCM_LIFT_FORWARD_CHANNEL_ID, PCM_LIFT_REVERSE_CHANNEL_ID);
+        sideLiftR  = new DoubleSolenoid(PCM_CAN_ID, PCM_RIGHT_SIDE_FORWARD_CHANNEL_ID, PCM_RIGHT_SIDE_REVERSE_CHANNEL_ID);
+        sideLiftL  = new DoubleSolenoid(PCM_CAN_ID, PCM_LEFT_SIDE_FORWARD_CHANNEL_ID, PCM_LEFT_SIDE_REVERSE_CHANNEL_ID);
     }
 
     /**
@@ -173,7 +173,7 @@ public class Robot extends IterativeRobot {
     }
 
     /**
-     * @param value: The value to set all solenoids to (forward, reverse, or off);
+     * @param value The value to set all solenoids to (forward, reverse, or off);
      */
     public void solenoidControl(Value value) {
         sideLiftR.set(value);
@@ -214,7 +214,7 @@ public class Robot extends IterativeRobot {
     }
 
     /**
-     *
+     * After the robot is disabled, flush and unload things from the Strongback framework
      */
     @Override
     public void disabledInit() {
@@ -223,16 +223,18 @@ public class Robot extends IterativeRobot {
     }
 
     /**
+     * Get the value from the left joystick Y axis, then invert and return it.
      *
-     * @return
+     * @return double Inverted Y axis coordinate for the left joystick
      */
     public double leftStickReturn() {
         return leftStick.getY() * -1;
     }
 
     /**
+     * Get the value from the right joystick Y axis, then invert and return it.
      *
-     * @return
+     * @return double Inverted Y axis coordinate for the right joystick
      */
     public double rightStickReturn() {
         return rightStick.getY() * -1;
