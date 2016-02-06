@@ -4,7 +4,6 @@ package org.usfirst.frc.team3926.robot;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.strongback.mock.Mock;
-import org.strongback.mock.MockMotor;
 import org.strongback.mock.MockTalonSRX;
 
 public class TestRobot {

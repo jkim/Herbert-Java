@@ -2,9 +2,6 @@
 package org.usfirst.frc.team3926.robot;
 
 import org.strongback.Strongback;
-import org.strongback.components.Motor;
-import org.strongback.components.PneumaticsModule;
-import org.strongback.hardware.Hardware;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -17,67 +14,89 @@ import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot {
-	Motor strongBackTalon_FL;
-	Talon talon_FL;
-	Talon talon_BL;
-	Talon talon_FR;
-    Talon talon_BR;
-    
-    RobotDrive driveSystem;
-    Talon armWheels;
-    Talon mysteryTalon; // talon of unknown origin 
-    
-    Joystick leftStick;
+    // PCM Constants
+    public static final int PCM_CAN_ID                        = 1;
+    public static final int PCM_LEFT_SIDE_REVERSE_CHANNEL_ID  = 1;
+    public static final int PCM_LIFT_REVERSE_CHANNEL_ID       = 2;
+    public static final int PCM_RIGHT_SIDE_REVERSE_CHANNEL_ID = 3;
+    public static final int PCM_RIGHT_SIDE_FORWARD_CHANNEL_ID = 4;
+    public static final int PCM_LIFT_FORWARD_CHANNEL_ID       = 5;
+    public static final int PCM_LEFT_SIDE_FORWARD_CHANNEL_ID  = 6;
+
+    // Talon Constants
+    public static final int TALON_FRONT_LEFT_CAN_ID  = 0;
+    public static final int TALON_BACK_LEFT_CAN_ID   = 1;
+    public static final int TALON_FRONT_RIGHT_CAN_ID = 2;
+    public static final int TALON_BACK_RIGHT_CAN_ID  = 3;
+    public static final int TALON_ARM_WHEELS_CAN_ID  = 8;
+
+    // Human Interface Controller Constants
+    public static final int LEFT_JOYSTICK_ID  = 0;
+    public static final int RIGHT_JOYSTICK_ID = 1;
+
+    // Limit Switch Constants
+    public static final int TOP_LIMIT_SWITCH_ID    = 9;
+    public static final int BOTTOM_LIMIT_SWITCH_ID = 8;
+
+    // Pneumatic Control System Objects
+    private Compressor compressor;
+    private DoubleSolenoid mainLift; //The main giant cylinder
+    private DoubleSolenoid sideLiftR; //The right side cylinder
+    private DoubleSolenoid sideLiftL; //The left side cylinder
+
+    // Talon Motor Controller Objects
+    private Talon talonFrontLeft;
+    private Talon talonBackLeft;
+    private Talon talonFrontRight;
+    private Talon talonBackRight;
+    private Talon armWheels;
+    private Talon mysteryTalon; // Talon of unknown origin
+
+    // Drive System Object
+    private RobotDrive driveSystem;
+
+    // Human Interface Controller Objects
+    private Joystick leftStick;
+    private Joystick rightStick;
+
+    // Limit Switch Objects
+    private DigitalInput topLimit;
+    private DigitalInput botLimit;
+
+    // Misc object members
     double leftInput;
-    Joystick rightStick;
     double rightInput;
-    
-    DigitalInput topLimit;
-    DigitalInput botLimit;
     int debounce = 0;
     
-    Compressor compressor;
-    DoubleSolenoid mainLift; //The main giant cylinder
-    DoubleSolenoid sideLiftR; //The right side cylinder
-    DoubleSolenoid sideLiftL; //The left side cylinder 
-    
-    final int ID           = 1; //ID number of the PCM (pneumatics control module)
-    final int liftForward  = 5; //These need to be the channel numbers on the PCM (only like this so we can write other code)
-    final int liftReverse  = 2;
-    final int rSideForward = 4;
-    final int rSideReverse = 3;
-    final int lSideForward = 6;
-    final int lSideReverse = 1;
-
-    final int TALON_FL_ID = 0;
-    final int TALON_BL_ID = 1;
-    final int TALON_FR_ID = 2;
-    final int TALON_BR_ID = 3;
-
     /**
      * Main Robot initialization
      */
     @Override
     public void robotInit() {
-        strongBackTalon_FL = Hardware.Motors.talon(TALON_FL_ID);
-        talon_FL = new Talon(TALON_FL_ID);
-        talon_BL = new Talon(TALON_BL_ID);
-        talon_FR = new Talon(TALON_FR_ID);
-        talon_BR = new Talon(TALON_BR_ID);
-        driveSystem = new RobotDrive(talon_FL, talon_BL, talon_FR, talon_BR);
-        armWheels = new Talon(8);
+        // Initialize Motor Controllers
+        talonFrontLeft     = new Talon(TALON_FRONT_LEFT_CAN_ID);
+        talonBackLeft      = new Talon(TALON_BACK_LEFT_CAN_ID);
+        talonFrontRight    = new Talon(TALON_FRONT_RIGHT_CAN_ID);
+        talonBackRight     = new Talon(TALON_BACK_RIGHT_CAN_ID);
+        armWheels          = new Talon(TALON_ARM_WHEELS_CAN_ID);
 
-        leftStick = new Joystick(0);
-        rightStick = new Joystick(1);
+        // Initialize Drive System
+        driveSystem = new RobotDrive(talonFrontLeft, talonBackLeft, talonFrontRight, talonBackRight);
 
-        topLimit = new DigitalInput(9);
-        botLimit = new DigitalInput(8);
+        // Initialize Human Interface Controllers
+        leftStick  = new Joystick(LEFT_JOYSTICK_ID);
+        rightStick = new Joystick(RIGHT_JOYSTICK_ID);
 
-        compressor = new Compressor(ID);
+        // Initialize Limit Switches
+        topLimit = new DigitalInput(TOP_LIMIT_SWITCH_ID);
+        botLimit = new DigitalInput(BOTTOM_LIMIT_SWITCH_ID);
+
+        // Initialize Pneumatic Control System
+        compressor = new Compressor(PCM_CAN_ID);
         compressor.setClosedLoopControl(true);
-        mainLift = new DoubleSolenoid(ID, liftForward, liftReverse);
-        sideLiftR = new DoubleSolenoid(ID, rSideForward, rSideReverse);
-        sideLiftL = new DoubleSolenoid(ID, lSideForward, lSideReverse);
+        mainLift = new DoubleSolenoid(PCM_CAN_ID, PCM_LIFT_FORWARD_CHANNEL_ID, PCM_LIFT_REVERSE_CHANNEL_ID);
+        sideLiftR = new DoubleSolenoid(PCM_CAN_ID, PCM_RIGHT_SIDE_FORWARD_CHANNEL_ID, PCM_RIGHT_SIDE_REVERSE_CHANNEL_ID);
+        sideLiftL = new DoubleSolenoid(PCM_CAN_ID, PCM_LEFT_SIDE_FORWARD_CHANNEL_ID, PCM_LEFT_SIDE_REVERSE_CHANNEL_ID);
     }
 
     /**
