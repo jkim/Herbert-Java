@@ -77,9 +77,21 @@ public class Robot extends IterativeRobot {
         // Initialize Pneumatic Control System
         compressor = new Compressor(PCMId.CAN_ID.getId());
         compressor.setClosedLoopControl(true);
-        mainLift   = new DoubleSolenoid(PCMId.CAN_ID.getId(), PCMId.LIFT_FORWARD_CHANNEL_ID.getId(), PCMId.LIFT_FORWARD_CHANNEL_ID.getId());
-        sideLiftR  = new DoubleSolenoid(PCMId.CAN_ID.getId(), PCMId.RIGHT_SIDE_FORWARD_CHANNEL_ID.getId(), PCMId.RIGHT_SIDE_REVERSE_CHANNEL_ID.getId());
-        sideLiftL  = new DoubleSolenoid(PCMId.CAN_ID.getId(), PCMId.LEFT_SIDE_FORWARD_CHANNEL_ID.getId(), PCMId.LEFT_SIDE_REVERSE_CHANNEL_ID.getId());
+        mainLift   = new DoubleSolenoid(
+                PCMId.CAN_ID.getId(),
+                PCMId.LIFT_FORWARD_CHANNEL_ID.getId(),
+                PCMId.LIFT_FORWARD_CHANNEL_ID.getId()
+        );
+        sideLiftR  = new DoubleSolenoid(
+                PCMId.CAN_ID.getId(),
+                PCMId.RIGHT_SIDE_FORWARD_CHANNEL_ID.getId(),
+                PCMId.RIGHT_SIDE_REVERSE_CHANNEL_ID.getId()
+        );
+        sideLiftL  = new DoubleSolenoid(
+                PCMId.CAN_ID.getId(),
+                PCMId.LEFT_SIDE_FORWARD_CHANNEL_ID.getId(),
+                PCMId.LEFT_SIDE_REVERSE_CHANNEL_ID.getId()
+        );
     }
 
     /**
@@ -104,12 +116,18 @@ public class Robot extends IterativeRobot {
 //            rightInput = leftInput;
 //        }
 
+        /*
+            Document what is going on here.
+        */
         if (leftStick.getRawButton(JoystickButtonId.BUTTON_1.getId())) {
             rightInput = leftInput;
         }
 
         driveSystem.tankDrive(leftInput, rightInput);
 
+        /*
+            Document and encapsulate the logic here
+        */
         if (leftStick.getRawButton(JoystickButtonId.BUTTON_2.getId())) {
             armWheels.set(PWMDefinedSpeeds.FULL_SPEED_FORWARD.getId());
         } else if (leftStick.getRawButton(JoystickButtonId.BUTTON_3.getId())) {
@@ -119,6 +137,10 @@ public class Robot extends IterativeRobot {
             armWheels.set(PWMDefinedSpeeds.STOP.getId());
         }
 
+        /*
+            Documents what the topLimit and botLimit functionality is doing,
+            and if applicable encapsulate.
+        */
         while(topLimit.get()) {
             ++debounce;
         }
@@ -135,6 +157,9 @@ public class Robot extends IterativeRobot {
             debounce = 0;
         }
 
+        /*
+            Encapsulate (into objects and/or objects and methods) this logic into something concise
+        */
         if (rightStick.getRawButton(JoystickButtonId.BUTTON_1.getId())) {
             solenoidControl(DoubleSolenoid.Value.kForward);
         } else if (rightStick.getRawButton(JoystickButtonId.BUTTON_4.getId())) {
