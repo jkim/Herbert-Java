@@ -13,44 +13,26 @@ import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import org.usfirst.frc.team3926.robot.enums.PCMId;
+import org.usfirst.frc.team3926.robot.enums.TalonId;
+import org.usfirst.frc.team3926.robot.enums.JoystickId;
+import org.usfirst.frc.team3926.robot.enums.LimitSwitchId;
+
+
 public class Robot extends IterativeRobot {
-    // PCM Constants
-    public static final int PCM_CAN_ID                        = 1;
-    public static final int PCM_LEFT_SIDE_REVERSE_CHANNEL_ID  = 1;
-    public static final int PCM_LIFT_REVERSE_CHANNEL_ID       = 2;
-    public static final int PCM_RIGHT_SIDE_REVERSE_CHANNEL_ID = 3;
-    public static final int PCM_RIGHT_SIDE_FORWARD_CHANNEL_ID = 4;
-    public static final int PCM_LIFT_FORWARD_CHANNEL_ID       = 5;
-    public static final int PCM_LEFT_SIDE_FORWARD_CHANNEL_ID  = 6;
-
-    // Talon Constants
-    public static final int TALON_FRONT_LEFT_CAN_ID  = 0;
-    public static final int TALON_BACK_LEFT_CAN_ID   = 1;
-    public static final int TALON_FRONT_RIGHT_CAN_ID = 2;
-    public static final int TALON_BACK_RIGHT_CAN_ID  = 3;
-    public static final int TALON_ARM_WHEELS_CAN_ID  = 8;
-
-    // Human Interface Controller Constants
-    public static final int LEFT_JOYSTICK_ID  = 0;
-    public static final int RIGHT_JOYSTICK_ID = 1;
-
-    // Limit Switch Constants
-    public static final int TOP_LIMIT_SWITCH_ID    = 9;
-    public static final int BOTTOM_LIMIT_SWITCH_ID = 8;
-
     // Pneumatic Control System Objects
     private Compressor compressor;
     private DoubleSolenoid mainLift; //The main giant cylinder
     private DoubleSolenoid sideLiftR; //The right side cylinder
     private DoubleSolenoid sideLiftL; //The left side cylinder
 
-    // Talon Motor Controller Objects
+    // TalonId Motor Controller Objects
     private Talon talonFrontLeft;
     private Talon talonBackLeft;
     private Talon talonFrontRight;
     private Talon talonBackRight;
     private Talon armWheels;
-    private Talon mysteryTalon; // Talon of unknown origin
+    private Talon mysteryTalon; // TalonId of unknown origin
 
     // Drive System Object
     private RobotDrive driveSystem;
@@ -74,29 +56,29 @@ public class Robot extends IterativeRobot {
     @Override
     public void robotInit() {
         // Initialize Motor Controllers
-        talonFrontLeft     = new Talon(TALON_FRONT_LEFT_CAN_ID);
-        talonBackLeft      = new Talon(TALON_BACK_LEFT_CAN_ID);
-        talonFrontRight    = new Talon(TALON_FRONT_RIGHT_CAN_ID);
-        talonBackRight     = new Talon(TALON_BACK_RIGHT_CAN_ID);
-        armWheels          = new Talon(TALON_ARM_WHEELS_CAN_ID);
+        talonFrontLeft     = new Talon(TalonId.FRONT_LEFT_CAN_ID.getId());
+        talonBackLeft      = new Talon(TalonId.BACK_LEFT_CAN_ID.getId());
+        talonFrontRight    = new Talon(TalonId.FRONT_RIGHT_CAN_ID.getId());
+        talonBackRight     = new Talon(TalonId.BACK_RIGHT_CAN_ID.getId());
+        armWheels          = new Talon(TalonId.ARM_WHEELS_CAN_ID.getId());
 
         // Initialize Drive System
         driveSystem = new RobotDrive(talonFrontLeft, talonBackLeft, talonFrontRight, talonBackRight);
 
         // Initialize Human Interface Controllers
-        leftStick  = new Joystick(LEFT_JOYSTICK_ID);
-        rightStick = new Joystick(RIGHT_JOYSTICK_ID);
+        leftStick  = new Joystick(JoystickId.LEFT_ID.getId());
+        rightStick = new Joystick(JoystickId.RIGHT_ID.getId());
 
         // Initialize Limit Switches
-        topLimit = new DigitalInput(TOP_LIMIT_SWITCH_ID);
-        botLimit = new DigitalInput(BOTTOM_LIMIT_SWITCH_ID);
+        topLimit = new DigitalInput(LimitSwitchId.TOP_ID.getId());
+        botLimit = new DigitalInput(LimitSwitchId.BOTTOM_ID.getId());
 
         // Initialize Pneumatic Control System
-        compressor = new Compressor(PCM_CAN_ID);
+        compressor = new Compressor(PCMId.CAN_ID.getId());
         compressor.setClosedLoopControl(true);
-        mainLift   = new DoubleSolenoid(PCM_CAN_ID, PCM_LIFT_FORWARD_CHANNEL_ID, PCM_LIFT_REVERSE_CHANNEL_ID);
-        sideLiftR  = new DoubleSolenoid(PCM_CAN_ID, PCM_RIGHT_SIDE_FORWARD_CHANNEL_ID, PCM_RIGHT_SIDE_REVERSE_CHANNEL_ID);
-        sideLiftL  = new DoubleSolenoid(PCM_CAN_ID, PCM_LEFT_SIDE_FORWARD_CHANNEL_ID, PCM_LEFT_SIDE_REVERSE_CHANNEL_ID);
+        mainLift   = new DoubleSolenoid(PCMId.CAN_ID.getId(), PCMId.LIFT_FORWARD_CHANNEL_ID.getId(), PCMId.LIFT_FORWARD_CHANNEL_ID.getId());
+        sideLiftR  = new DoubleSolenoid(PCMId.CAN_ID.getId(), PCMId.RIGHT_SIDE_FORWARD_CHANNEL_ID.getId(), PCMId.RIGHT_SIDE_REVERSE_CHANNEL_ID.getId());
+        sideLiftL  = new DoubleSolenoid(PCMId.CAN_ID.getId(), PCMId.LEFT_SIDE_FORWARD_CHANNEL_ID.getId(), PCMId.LEFT_SIDE_REVERSE_CHANNEL_ID.getId());
     }
 
     /**
