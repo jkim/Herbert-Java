@@ -17,7 +17,8 @@ import org.usfirst.frc.team3926.robot.enums.PCMId;
 import org.usfirst.frc.team3926.robot.enums.TalonId;
 import org.usfirst.frc.team3926.robot.enums.JoystickId;
 import org.usfirst.frc.team3926.robot.enums.LimitSwitchId;
-
+import org.usfirst.frc.team3926.robot.enums.JoystickButtonId;
+import org.usfirst.frc.team3926.robot.enums.PWMDefinedSpeeds;
 
 public class Robot extends IterativeRobot {
     // Pneumatic Control System Objects
@@ -96,25 +97,26 @@ public class Robot extends IterativeRobot {
     @Override
     public void teleopPeriodic() {
         rightInput = rightStickReturn();
-        leftInput = leftStickReturn();
+        leftInput  = leftStickReturn();
 
-        if (leftStick.getRawButton(1)) {
-            rightInput = leftInput;
-        }
+// Is this intentionally duplicated?
+//        if (leftStick.getRawButton(JoystickButtonId.BUTTON_1.getId())) {
+//            rightInput = leftInput;
+//        }
 
-        if (leftStick.getRawButton(1)) {
+        if (leftStick.getRawButton(JoystickButtonId.BUTTON_1.getId())) {
             rightInput = leftInput;
         }
 
         driveSystem.tankDrive(leftInput, rightInput);
 
-        if (leftStick.getRawButton(2)) {
-            armWheels.set(1);
-        } else if (leftStick.getRawButton(3)) {
-            armWheels.set(-1);
+        if (leftStick.getRawButton(JoystickButtonId.BUTTON_2.getId())) {
+            armWheels.set(PWMDefinedSpeeds.FULL_SPEED_FORWARD.getId());
+        } else if (leftStick.getRawButton(JoystickButtonId.BUTTON_3.getId())) {
+            armWheels.set(PWMDefinedSpeeds.FULL_SPEED_REVERSE.getId());
         }
         else {
-            armWheels.set(0);
+            armWheels.set(PWMDefinedSpeeds.STOP.getId());
         }
 
         while(topLimit.get()) {
@@ -133,13 +135,13 @@ public class Robot extends IterativeRobot {
             debounce = 0;
         }
 
-        if (rightStick.getRawButton(1)) {
+        if (rightStick.getRawButton(JoystickButtonId.BUTTON_1.getId())) {
             solenoidControl(DoubleSolenoid.Value.kForward);
-        } else if (rightStick.getRawButton(4)) {
+        } else if (rightStick.getRawButton(JoystickButtonId.BUTTON_4.getId())) {
             solenoidControl(DoubleSolenoid.Value.kReverse);
-        } else if (leftStick.getRawButton(1)) {
+        } else if (leftStick.getRawButton(JoystickButtonId.BUTTON_1.getId())) {
             mainLift.set(DoubleSolenoid.Value.kForward);
-        } else if (leftStick.getRawButton(4)) {
+        } else if (leftStick.getRawButton(JoystickButtonId.BUTTON_4.getId())) {
             mainLift.set(DoubleSolenoid.Value.kReverse);
         } else  {
             solenoidControl(DoubleSolenoid.Value.kOff);
